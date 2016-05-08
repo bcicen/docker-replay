@@ -1,10 +1,10 @@
 from setuptools import setup
 
-exec(open('rerun/version.py').read())
+exec(open('docker_rerun/version.py').read())
 
 setup(name='docker-rerun',
       version=version,
-      packages=['rerun'],
+      packages=['docker_rerun'],
       description='Generate docker run commands from running containers',
       author='Bradley Cicenas',
       author_email='bradley.cicenas@gmail.com',
@@ -21,6 +21,6 @@ setup(name='docker-rerun',
       ),
       keywords='docker docker-py devops',
       entry_points = {
-        'console_scripts' : ['docker-rerun = docker_rereun:main']
+        'console_scripts' : ['docker-rerun = docker_rerun:main']
       }
 )

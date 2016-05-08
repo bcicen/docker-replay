@@ -1,10 +1,17 @@
 import sys
+from argparse import ArgumentParser
 from docker import Client, errors
 
+from docker_rerun import version
+
 class RunCommand(object):
-    def __init__(self, container, image):
-        self.image = image
-        self.container = container
+    def __init__(self, container_id):
+        client = Client()
+        try:
+            self.container = client.inspect_container(container_id)
+        except errors.NotFound:
+            print('no such container: %s' % container_id)
+            sys.exit(1)
 
     @property
     def args(self):
@@ -51,16 +58,12 @@ class RunCommand(object):
         return 'docker run %s' % self.build_opts()
 
 def main():
-    q = sys.argv[1]
-    client = Client()
-    try:
-        container = client.inspect_container(q)
-        image = client.inspect_image(container['Image'])
-    except errors.NotFound:
-        print('no such container: %s' % q)
-        sys.exit(1)
-    
-    print(RunCommand(container, image))
+    parser = ArgumentParser(description='docker-rerun v%s' % version)
+    parser.add_argument('container', help='container to generate command from')
+
+    args = parser.parse_args()
+
+    print(RunCommand(args.container))
 
 if __name__ == '__main__':
     main()
