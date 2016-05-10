@@ -3,27 +3,7 @@ from argparse import ArgumentParser
 from docker import Client, errors
 
 from docker_rerun import version
-
-def value_opt(f):
-    def wrap(obj, *args, **kwargs):
-        opt, val = f(obj)
-        if not val:
-            return None
-        if isinstance(val, str): 
-            return '%s%s' % (opt, val)
-        elif isinstance(val, list):
-            return ' '.join([ '%s%s' % (opt, v) for v in val ])
-        else:
-            raise TypeError('unknown option value type: %s' % val)
-    return wrap
-
-def bool_opt(f):
-    def wrap(obj, *args, **kwargs):
-        opt, val = f(obj)
-        if not val:
-            return None
-        return opt
-    return wrap
+from docker_rerun.decorators import bool_opt, value_opt
 
 class RunCommand(object):
     bool_opts = []
