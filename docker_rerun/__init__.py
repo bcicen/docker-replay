@@ -5,8 +5,8 @@ from docker import Client, errors
 from docker_rerun import version
 
 def value_opt(f):
-    def wrap(obj):
-        opt, val = f()
+    def wrap(obj, *args, **kwargs):
+        opt, val = f(obj)
         if not val:
             return None
         if isinstance(val, str): 
@@ -15,19 +15,19 @@ def value_opt(f):
             return ' '.join([ '%s%s' % (opt, v) for v in val ])
         else:
             raise TypeError('unknown option value type: %s' % val)
-
-    return wrap(obj)
+    return wrap
 
 def bool_opt(f):
-    def wrap(obj):
-        opt, val = f()
+    def wrap(obj, *args, **kwargs):
+        opt, val = f(obj)
         if not val:
             return None
         return opt
-
-    return wrap(obj)
+    return wrap
 
 class RunCommand(object):
+    bool_opts = []
+    value_opts = []
     def __init__(self, container_id):
         client = Client()
         try:
@@ -43,26 +43,24 @@ class RunCommand(object):
         return (' ').join(self.config['Cmd'])
 
     @property
+    @value_opt
     def add_host_opt(self):
-        if not self.host_config['ExtraHosts']:
-            return None
-        return ' '.join([ '--add-host=%s' % h for h in \
-                self.host_config['ExtraHosts'] ])
+        return '--add-host=', self.host_config['ExtraHosts']
 
     @property
+    @value_opt
     def blkio_weight_opt(self):
-        if self.host_config['BlkioWeight']:
-            return '--blkio-weight="%s"' % self.host_config['BlkioWeight']
+        return '--blkio-weight=', self.host_config['BlkioWeight']
 
     @property
+    @value_opt
     def blkio_weight_device_opt(self):
-        if self.host_config['BlkioWeightDevice']:
-            return '--blkio-weight-device="%s"' % self.host_config['BlkioWeightDevice']
+        return '--blkio-weight-device=', self.host_config['BlkioWeightDevice']
 
     @property
+    @value_opt
     def cpu_shares_opts(self):
-        if self.config['CpuShares']:
-            return '--cpu-shares' % self.config['CpuShares']
+        return '--cpu-shares=', self.config['CpuShares']
 
     @property
     def entrypoint_opt(self):
@@ -75,28 +73,29 @@ class RunCommand(object):
         return '--interactive', self.config['OpenStdin']
 
     @property
+    @value_opt
     def memory_opt(self):
-        if self.host_config['Memory']:
-            return '--memory="%s"' % self.host_config['Memory']
+        return '--memory=', self.host_config['Memory']
 
     @property
+    @value_opt
     def name_opt(self):
-        return '--name="%s"' % self.container['Name'].strip('/')
+        return '--name=', self.container['Name'].strip('/')
 
     @property
+    @bool_opt
     def tty_opt(self):
-        if self.config['Tty']:
-            return '--tty'
+        return '--tty', self.config['Tty']
 
     @property
+    @value_opt
     def user_opt(self):
-        if self.config['User']:
-            return '--user="%s"' % self.config['User']
+        return '--user=', self.config['User']
 
     @property
+    @value_opt
     def volume_opt(self):
-        return ' '.join([ '--volume=%s' % v for v in \
-                self.host_config['Binds'] ])
+        return '--volume=', self.host_config['Binds']
 
     def build_opts(self):
         opts = [ o for o in self._all_opts() if o ]
