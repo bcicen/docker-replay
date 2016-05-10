@@ -4,55 +4,107 @@ from docker import Client, errors
 
 from docker_rerun import version
 
+def value_opt(f):
+    def wrap(obj):
+        opt, val = f()
+        if not val:
+            return None
+        if isinstance(val, str): 
+            return '%s%s' % (opt, val)
+        elif isinstance(val, list):
+            return ' '.join([ '%s%s' % (opt, v) for v in val ])
+        else:
+            raise TypeError('unknown option value type: %s' % val)
+
+    return wrap(obj)
+
+def bool_opt(f):
+    def wrap(obj):
+        opt, val = f()
+        if not val:
+            return None
+        return opt
+
+    return wrap(obj)
+
 class RunCommand(object):
     def __init__(self, container_id):
         client = Client()
         try:
             self.container = client.inspect_container(container_id)
+            self.config = self.container['Config']
+            self.host_config = self.container['HostConfig']
         except errors.NotFound:
             print('no such container: %s' % container_id)
             sys.exit(1)
 
     @property
-    def args(self):
-        return (' ').join(self.container['Args'])
+    def cmd(self):
+        return (' ').join(self.config['Cmd'])
 
     @property
-    def cmd(self):
-        return self.container['Path']
+    def add_host_opt(self):
+        if not self.host_config['ExtraHosts']:
+            return None
+        return ' '.join([ '--add-host=%s' % h for h in \
+                self.host_config['ExtraHosts'] ])
+
+    @property
+    def blkio_weight_opt(self):
+        if self.host_config['BlkioWeight']:
+            return '--blkio-weight="%s"' % self.host_config['BlkioWeight']
+
+    @property
+    def blkio_weight_device_opt(self):
+        if self.host_config['BlkioWeightDevice']:
+            return '--blkio-weight-device="%s"' % self.host_config['BlkioWeightDevice']
+
+    @property
+    def cpu_shares_opts(self):
+        if self.config['CpuShares']:
+            return '--cpu-shares' % self.config['CpuShares']
 
     @property
     def entrypoint_opt(self):
-        entrypoint = self.container['Config']['Entrypoint']
-        if entrypoint:
-            return '--entrypoint="%s"' % ' '.join(entrypoint)
+        if self.config['Entrypoint']:
+            return '--entrypoint="%s"' % ' '.join(self.config['Entrypoint'])
+
+    @property
+    @bool_opt
+    def interactive_opt(self):
+        return '--interactive', self.config['OpenStdin']
+
+    @property
+    def memory_opt(self):
+        if self.host_config['Memory']:
+            return '--memory="%s"' % self.host_config['Memory']
 
     @property
     def name_opt(self):
         return '--name="%s"' % self.container['Name'].strip('/')
 
     @property
+    def tty_opt(self):
+        if self.config['Tty']:
+            return '--tty'
+
+    @property
     def user_opt(self):
-        if self.container['Config']['User']:
-            return '--user="%s"' % self.container['Config']['User']
+        if self.config['User']:
+            return '--user="%s"' % self.config['User']
 
     @property
     def volume_opt(self):
-        vopts = [] 
-        for mount in self.container['Mounts']:
-            opt = '--volume=%s:%s' % (mount['Source'], mount['Destination'])
-            if mount['Mode']:
-                opt += ':%s' % mount['Mode']
-            vopts.append(opt)
-        return ' '.join(vopts)
+        return ' '.join([ '--volume=%s' % v for v in \
+                self.host_config['Binds'] ])
 
     def build_opts(self):
-        opts = []
-        all_opts = [ o for o in dir(self) if o.endswith('_opt') ]
-        for opt in all_opts:
-            if self.__getattribute__(opt):
-                opts.append(self.__getattribute__(opt))
+        opts = [ o for o in self._all_opts() if o ]
         return ' '.join(opts)
+
+    def _all_opts(self):
+        return [ self.__getattribute__(a) for a in \
+                 dir(self) if a.endswith('_opt') ]
 
     def __str__(self):
         return 'docker run %s' % self.build_opts()
