@@ -95,6 +95,3 @@ def main():
     args = parser.parse_args()
 
     print(RunCommand(args.container))
-
-if __name__ == '__main__':
-    main()
