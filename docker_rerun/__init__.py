@@ -9,6 +9,7 @@ class RunCommand(object):
     bool_opts = []
     value_opts = []
     def __init__(self, container_id):
+        self.pretty_print = True
         client = Client()
         try:
             self.container = client.inspect_container(container_id)
@@ -20,7 +21,8 @@ class RunCommand(object):
 
     @property
     def cmd(self):
-        return (' ').join(self.config['Cmd'])
+        if self.config['Cmd']:
+            return (' ').join(self.config['Cmd'])
 
     @property
     @value_opt
@@ -79,14 +81,18 @@ class RunCommand(object):
 
     def build_opts(self):
         opts = [ o for o in self._all_opts() if o ]
-        return ' '.join(opts)
+        if self.cmd:
+            opts.append(self.cmd)
+        return opts
 
     def _all_opts(self):
         return [ self.__getattribute__(a) for a in \
                  dir(self) if a.endswith('_opt') ]
 
     def __str__(self):
-        return 'docker run %s' % self.build_opts()
+        if self.pretty_print:
+            return 'docker run %s' % ' \\\n           '.join(self.build_opts())
+        return 'docker run %s' % ' '.join(self.build_opts())
 
 def main():
     parser = ArgumentParser(description='docker-rerun v%s' % version)
