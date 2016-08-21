@@ -46,9 +46,6 @@ class RunCommand(object):
     def name(self):
         return '--name=%s' % self.container['Name'].strip('/')
 
-    def _get_value(self, source, key):
-        return source.get(key)
-
     def assemble_opts(self):
         all_opts = []
 
