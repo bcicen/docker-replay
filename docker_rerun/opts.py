@@ -4,23 +4,28 @@
 #TODO: ulimits
 
 import logging
-from docker_rerun.models import ValueOpt, BoolOpt, MapOpt
+from docker_rerun.models import BoolOpt, DockerOpt, MapOpt, ValueOpt
 
 log = logging.getLogger('docker-rerun')
-logging.basicConfig(level=logging.INFO)
 
 class OptionParser(object):
     def __init__(self, config):
         self.config = config
 
-    def get_all_opts(self):
-        def iter_opts():
-            for o_name, o_key, o_type in config_opts:
-                opt = o_type(o_name, self.get(o_key))
-                if not opt.is_null():
-                    log.info('found configured option: %s' % str(opt))
-                    yield str(opt)
-        return list(iter_opts())
+        # "Special" command line options (order-dependent, etc.)
+        self.special_opts = [
+            DockerOpt('--name', self.get('Name').strip('/')),
+            DockerOpt('--entrypoint', ' '.join(self.get('Config.Entrypoint'))),
+            DockerOpt(None, ' '.join(self.get('Config.Cmd')))
+          ]
+
+    def all_opts(self):
+        opts = []
+        for o_name, o_key, o_type in config_opts:
+            opt = o_type(o_name, self.get(o_key))
+            opts.append(opt)
+
+        return opts + self.special_opts
 
     def get(self, key):
         """

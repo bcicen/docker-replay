@@ -9,6 +9,11 @@ class DockerOpt(object):
             return False
         return True
 
+    def __str__(self):
+        if not self.opt:
+            return self.value
+        return '%s %s' % (self.opt, self.value)
+
 class BoolOpt(DockerOpt):
     def __init__(self, *args):
         DockerOpt.__init__(self, *args)

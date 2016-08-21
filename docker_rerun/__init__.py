@@ -1,9 +1,13 @@
 import sys
+import logging
 from argparse import ArgumentParser
 from docker import Client, errors
 
 from docker_rerun import version
 from docker_rerun.opts import OptionParser
+
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class RunCommand(object):
     def __init__(self, container_id, pretty_print=True):
@@ -16,31 +20,8 @@ class RunCommand(object):
             print('no such container: %s' % container_id)
             sys.exit(1)
 
-    @property
-    def cmd(self):
-        key = 'Config.Cmd' 
-        if self.parser.get(key):
-            return (' ').join(self.parser.get(key))
-
-    @property
-    def entrypoint(self):
-        key = 'Config.Entrypoint' 
-        if self.parser.get(key):
-            return '--entrypoint="%s"' % ' '.join(self.parser.get(key))
-
-    @property
-    def name(self):
-        return '--name=%s' % self.parser.get('Name').strip('/')
-
     def __str__(self):
-        opts = self.parser.get_all_opts()
-        opts.append(self.name)
-
-        if self.entrypoint:
-            opts.append(self.entrypoint)
-
-        if self.cmd:
-            opts.append(self.cmd)
+        opts = [ str(o) for o in self.parser.all_opts() if not o.is_null() ]
 
         if self.pretty_print:
             return 'docker run %s' % ' \\\n           '.join(opts)
