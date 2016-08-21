@@ -22,13 +22,13 @@ class ValueOpt(DockerOpt):
 
     def __str__(self):
         if isinstance(self.value, str):
-            return '%s%s' % (self.opt, self.value)
+            return '%s %s' % (self.opt, self.value)
         elif isinstance(self.value, int):
-            return '%s%s' % (self.opt, self.value)
+            return '%s %s' % (self.opt, self.value)
         elif isinstance(self.value, float):
-            return '%s%s' % (self.opt, self.value)
+            return '%s %s' % (self.opt, self.value)
         elif isinstance(self.value, list):
-            return ' '.join([ '%s%s' % (self.opt, v) for v in self.value ])
+            return ' '.join([ '%s %s' % (self.opt, v) for v in self.value ])
         else:
             raise TypeError('unsupported value type for option "%s": %s' % \
                     (self.opt, self.value))
