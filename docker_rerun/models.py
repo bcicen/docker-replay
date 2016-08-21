@@ -1,14 +1,17 @@
 
 class DockerOpt(object):
+    def __init__(self, opt, val):
+        self.opt = opt
+        self.value = val
+
     def is_null(self):
         if self.value:
             return False
         return True
 
 class BoolOpt(DockerOpt):
-    def __init__(self, opt, val):
-        self.opt = opt
-        self.value = val
+    def __init__(self, *args):
+        DockerOpt.__init__(self, *args)
 
     def __str__(self):
         return self.opt
@@ -16,9 +19,8 @@ class BoolOpt(DockerOpt):
 #TODO: add ByteValueOpt type to convert bytes to human-readable string
 class ValueOpt(DockerOpt):
     """ Option with one or more user-defined values """
-    def __init__(self, opt, val):
-        self.opt = opt
-        self.value = val
+    def __init__(self, *args):
+        DockerOpt.__init__(self, *args)
 
     def __str__(self):
         if isinstance(self.value, str):
@@ -35,9 +37,8 @@ class ValueOpt(DockerOpt):
 
 class MapOpt(DockerOpt):
     """ Option with one or more user-defined mappings """
-    def __init__(self, opt, val):
-        self.opt = opt
-        self.value = val
+    def __init__(self, *args):
+        DockerOpt.__init__(self, *args)
 
     def __str__(self):
         if not isinstance(self.value, dict):
