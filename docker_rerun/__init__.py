@@ -3,13 +3,26 @@ from argparse import ArgumentParser
 from docker import Client, errors
 
 from docker_rerun import version
-from docker_rerun.decorators import bool_opt, value_opt
+from docker_rerun.models import BoolOpt, ValueOpt
+
+config_opts = [
+    ('--cpu-shares=', 'CpuShares', ValueOpt),
+    ('--interactive', 'OpenStdin', BoolOpt),
+    ('--tty', 'Tty', BoolOpt),
+    ('--user=', 'User', ValueOpt)
+  ]
+
+host_config_opts = [
+    ('--add-host=', 'ExtraHosts', ValueOpt),
+    ('--blkio-weight=', 'BlkioWeight', ValueOpt),
+    ('--blkio-weight-device=', 'BlkioWeightDevice', ValueOpt),
+    ('--memory=', 'Memory', ValueOpt),
+    ('--volume=', 'Binds', ValueOpt)
+  ]
 
 class RunCommand(object):
-    bool_opts = []
-    value_opts = []
-    def __init__(self, container_id):
-        self.pretty_print = True
+    def __init__(self, container_id, pretty_print=True):
+        self.pretty_print = pretty_print
         client = Client()
         try:
             self.container = client.inspect_container(container_id)
@@ -25,74 +38,43 @@ class RunCommand(object):
             return (' ').join(self.config['Cmd'])
 
     @property
-    @value_opt
-    def add_host_opt(self):
-        return '--add-host=', self.host_config['ExtraHosts']
-
-    @property
-    @value_opt
-    def blkio_weight_opt(self):
-        return '--blkio-weight=', self.host_config['BlkioWeight']
-
-    @property
-    @value_opt
-    def blkio_weight_device_opt(self):
-        return '--blkio-weight-device=', self.host_config['BlkioWeightDevice']
-
-    @property
-    @value_opt
-    def cpu_shares_opts(self):
-        return '--cpu-shares=', self.config['CpuShares']
-
-    @property
-    def entrypoint_opt(self):
+    def entrypoint(self):
         if self.config['Entrypoint']:
             return '--entrypoint="%s"' % ' '.join(self.config['Entrypoint'])
 
     @property
-    @bool_opt
-    def interactive_opt(self):
-        return '--interactive', self.config['OpenStdin']
+    def name(self):
+        return '--name=%s' % self.container['Name'].strip('/')
 
-    @property
-    @value_opt
-    def memory_opt(self):
-        return '--memory=', self.host_config['Memory']
+    def _get_value(self, source, key):
+        return source.get(key)
 
-    @property
-    @value_opt
-    def name_opt(self):
-        return '--name=', self.container['Name'].strip('/')
+    def assemble_opts(self):
+        all_opts = []
 
-    @property
-    @bool_opt
-    def tty_opt(self):
-        return '--tty', self.config['Tty']
+        # add all config opts
+        for opt_name, key, opt_type in config_opts:
+            all_opts.append(opt_type(opt_name, self.config.get(key)))
 
-    @property
-    @value_opt
-    def user_opt(self):
-        return '--user=', self.config['User']
+        # add all host_config opts
+        for opt_name, key, opt_type in host_config_opts:
+            all_opts.append(opt_type(opt_name, self.host_config.get(key)))
 
-    @property
-    @value_opt
-    def volume_opt(self):
-        return '--volume=', self.host_config['Binds']
-
-    def build_opts(self):
-        opts = [ o for o in self._all_opts() if o ]
-        if self.cmd:
-            opts.append(self.cmd)
-        return opts
-
-    def _all_opts(self):
-        return [ self.__getattribute__(a) for a in \
-                 dir(self) if a.endswith('_opt') ]
+        return [ str(o) for o in all_opts if not o.is_null() ]
 
     def __str__(self):
+        opts = self.assemble_opts()
+        opts.append(self.name)
+
+        if self.entrypoint:
+            opts.append(self.entrypoint)
+
+        if self.cmd:
+            opts.append(self.cmd)
+
         if self.pretty_print:
-            return 'docker run %s' % ' \\\n           '.join(self.build_opts())
-        return 'docker run %s' % ' '.join(self.build_opts())
+            return 'docker run %s' % ' \\\n           '.join(opts)
+        return 'docker run %s' % ' '.join(opts)
 
 def main():
     parser = ArgumentParser(description='docker-rerun v%s' % version)
