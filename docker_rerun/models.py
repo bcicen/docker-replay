@@ -1,4 +1,17 @@
 
+class DockerArg(object):
+    def __init__(self, name, val):
+        self.name = name
+        self.value = val
+
+    def is_null(self):
+        if self.value:
+            return False
+        return True
+
+    def __str__(self):
+        return self.value
+
 class DockerOpt(object):
     def __init__(self, opt, val):
         self.opt = opt
@@ -10,8 +23,6 @@ class DockerOpt(object):
         return True
 
     def __str__(self):
-        if not self.opt:
-            return self.value
         return '%s %s' % (self.opt, self.value)
 
 class BoolOpt(DockerOpt):

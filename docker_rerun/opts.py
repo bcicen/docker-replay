@@ -4,7 +4,7 @@
 #TODO: ulimits
 
 import logging
-from docker_rerun.models import BoolOpt, DockerOpt, MapOpt, ValueOpt
+from docker_rerun.models import BoolOpt, DockerArg, DockerOpt, MapOpt, ValueOpt
 
 log = logging.getLogger('docker-rerun')
 
@@ -15,17 +15,27 @@ class OptionParser(object):
         # "Special" command line options (order-dependent, etc.)
         self.special_opts = [
             DockerOpt('--name', self.get('Name').strip('/')),
-            DockerOpt('--entrypoint', ' '.join(self.get('Config.Entrypoint'))),
-            DockerOpt(None, ' '.join(self.get('Config.Cmd')))
+            DockerOpt('--entrypoint', ' '.join(self.get('Config.Entrypoint')))
           ]
 
-    def all_opts(self):
-        opts = []
+        for link in self.get('HostConfig.Links'):
+            src, linkname = link.split(':')
+            val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
+            self.special_opts.append(DockerOpt('--link', val))
+
+        self.args = [
+            DockerArg('Image', self.get('Config.Image')),
+            DockerArg('Cmd', ' '.join(self.get('Config.Cmd')))
+          ]
+
+    @property
+    def opts(self):
+        all_opts = []
         for o_name, o_key, o_type in config_opts:
             opt = o_type(o_name, self.get(o_key))
-            opts.append(opt)
+            all_opts.append(opt)
 
-        return opts + self.special_opts
+        return all_opts + self.special_opts
 
     def get(self, key):
         """
@@ -72,7 +82,6 @@ config_opts = [
     ('--ipc', 'HostConfig.IpcMode', ValueOpt),
     ('--isolation', 'HostConfig.Isolation', ValueOpt),
     ('--kernel-memory', 'HostConfig.KernelMemory', ValueOpt),
-    ('--link', 'HostConfig.Links', ValueOpt),
     ('--log-driver', 'HostConfig.LogConfig.Type', ValueOpt),
     ('--log-opt', 'HostConfig.LogConfig.Config', MapOpt),
     ('--memory', 'HostConfig.Memory', ValueOpt),

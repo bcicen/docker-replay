@@ -6,7 +6,7 @@ from docker import Client, errors
 from docker_rerun import version
 from docker_rerun.opts import OptionParser
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('docker-rerun')
 logging.basicConfig(level=logging.INFO)
 
 class RunCommand(object):
@@ -21,7 +21,8 @@ class RunCommand(object):
             sys.exit(1)
 
     def __str__(self):
-        opts = [ str(o) for o in self.parser.all_opts() if not o.is_null() ]
+        opts = [ str(o) for o in self.parser.opts if not o.is_null() ]
+        opts += [ str(a) for a in self.parser.args if not a.is_null() ]
 
         if self.pretty_print:
             return 'docker run %s' % ' \\\n           '.join(opts)
