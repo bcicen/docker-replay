@@ -6,7 +6,7 @@ from docker import Client, errors
 from docker_rerun import version
 from docker_rerun.opts import OptionParser
 
-log = logging.getLogger('docker-rerun')
+log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 class RunCommand(object):

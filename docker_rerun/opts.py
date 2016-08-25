@@ -6,7 +6,7 @@
 import logging
 from docker_rerun.models import BoolOpt, DockerArg, DockerOpt, MapOpt, ValueOpt
 
-log = logging.getLogger('docker-rerun')
+log = logging.getLogger(__name__)
 
 class OptionParser(object):
     def __init__(self, config):
@@ -15,8 +15,11 @@ class OptionParser(object):
         # "Special" command line options (order-dependent, etc.)
         self.special_opts = [
             DockerOpt('--name', self.get('Name').strip('/')),
-            DockerOpt('--entrypoint', ' '.join(self.get('Config.Entrypoint')))
           ]
+
+        if self.get('Config.Entrypoint'):
+            ep = ' '.join(self.get('Config.Entrypoint'))
+            self.special_opts.append(DockerOpt('--entrypoint', ep))
 
         for link in self.get('HostConfig.Links'):
             src, linkname = link.split(':')
