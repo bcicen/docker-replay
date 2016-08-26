@@ -1,4 +1,3 @@
-#TODO: restart policy
 #TODO: ulimits
 
 import logging
@@ -30,15 +29,30 @@ class OptionParser(object):
         if val:
             self.special_opts += list(self.read_links(val))
 
+        # restart policy
+        val = self.get('HostConfig.RestartPolicy')
+        self.special_opts.append(self.read_restart(val))
+
         # entrypoint
         val = self.get('Config.Entrypoint')
         if val:
-            self.special_opts.append(DockerOpt('--entrypoint', ' '.join(val)))
+            ep = '"%s"' % ' '.join(val)
+            self.special_opts.append(DockerOpt('--entrypoint', ep))
 
         self.args = [
             DockerArg('Image', self.get('Config.Image')),
             DockerArg('Cmd', ' '.join(self.get('Config.Cmd')))
           ]
+
+    @staticmethod
+    def read_restart(policy):
+        if policy['Name'] == 'on-failure':
+            val = 'on-failure:%s' % policy['MaximumRetryCount']
+        elif policy['Name'] == 'always':
+            val = 'on-failure:%s' % policy['MaximumRetryCount']
+        else:
+            val = None
+        return DockerOpt('--restart', val)
 
     @staticmethod
     def read_exposed(exposed):
@@ -56,7 +70,7 @@ class OptionParser(object):
 
         for cport,val in bindings.items():
             for hostport in read_hostports(val):
-                yield DockerOpt('--port', '%s:%s' % (cport,hostport))
+                yield DockerOpt('--publish', '%s:%s' % (cport,hostport))
 
     @staticmethod
     def read_links(links):
