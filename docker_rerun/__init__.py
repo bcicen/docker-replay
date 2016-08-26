@@ -9,7 +9,7 @@ from docker_rerun.opts import OptionParser
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-class RunCommand(object):
+class DockerRerun(object):
     def __init__(self, container_id, pretty_print=True):
         self.pretty_print = pretty_print
         client = Client()
@@ -29,9 +29,8 @@ class RunCommand(object):
         return 'docker run %s' % ' '.join(opts)
 
 def main():
-    parser = ArgumentParser(description='docker-rerun v%s' % version)
-    parser.add_argument('container', help='container to generate command from')
+    argparser = ArgumentParser(description='docker-rerun v%s' % version)
+    argparser.add_argument('container', help='container to generate command from')
+    args = argparser.parse_args()
 
-    args = parser.parse_args()
-
-    print(RunCommand(args.container))
+    print(DockerRerun(args.container))
