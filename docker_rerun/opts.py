@@ -1,4 +1,3 @@
-#TODO: expose ports
 #TODO: published ports
 #TODO: restart policy
 #TODO: ulimits
@@ -17,6 +16,12 @@ class OptionParser(object):
             DockerOpt('--name', self.get('Name').strip('/')),
           ]
 
+        # exposed ports
+        if self.get('Config.ExposedPorts'):
+            for k in self.get('Config.ExposedPorts'):
+                self.special_opts.append(DockerOpt('--expose', k))
+
+        # entrypoint
         if self.get('Config.Entrypoint'):
             ep = ' '.join(self.get('Config.Entrypoint'))
             self.special_opts.append(DockerOpt('--entrypoint', ep))
