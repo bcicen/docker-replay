@@ -4,7 +4,7 @@
 #TODO: ulimits
 
 import logging
-from docker_rerun.models import BoolOpt, DockerArg, DockerOpt, MapOpt, ValueOpt
+from docker_rerun.models import BoolOpt, DockerArg, DockerOpt, MapOpt, ByteValueOpt, ValueOpt
 
 log = logging.getLogger(__name__)
 
@@ -87,9 +87,9 @@ config_opts = [
     ('--kernel-memory', 'HostConfig.KernelMemory', ValueOpt),
     ('--log-driver', 'HostConfig.LogConfig.Type', ValueOpt),
     ('--log-opt', 'HostConfig.LogConfig.Config', MapOpt),
-    ('--memory', 'HostConfig.Memory', ValueOpt),
-    ('--memory-reservation', 'HostConfig.MemoryReservation', ValueOpt),
-    ('--memory-swap', 'HostConfig.MemorySwap', ValueOpt),
+    ('--memory', 'HostConfig.Memory', ByteValueOpt),
+    ('--memory-reservation', 'HostConfig.MemoryReservation', ByteValueOpt),
+    ('--memory-swap', 'HostConfig.MemorySwap', ByteValueOpt),
     ('--memory-swappiness', 'HostConfig.MemorySwappiness', ValueOpt),
     ('--oom-kill-disable', 'HostConfig.OomKillDisable', BoolOpt),
     ('--oom-score-adj', 'HostConfig.OomScoreAdj', ValueOpt),
@@ -102,7 +102,7 @@ config_opts = [
     ('--rm', 'HostConfig.AutoRemove', BoolOpt),
     ('--volume', 'HostConfig.Binds', ValueOpt),
     ('--security-opt', 'HostConfig.SecurityOpt', ValueOpt),
-    ('--shm-size', 'HostConfig.ShmSize', ValueOpt),
+    ('--shm-size', 'HostConfig.ShmSize', ByteValueOpt),
     ('--userns', 'HostConfig.UsernsMode', ValueOpt),
     ('--uts', 'HostConfig.UTSMode', ValueOpt),
     ('--volume-driver', 'HostConfig.VolumeDriver', ValueOpt),

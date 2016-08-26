@@ -32,7 +32,33 @@ class BoolOpt(DockerOpt):
     def __str__(self):
         return self.opt
 
-#TODO: add ByteValueOpt type to convert bytes to human-readable string
+class ByteValueOpt(DockerOpt):
+    """ Option with one or more user-defined values """
+    def __init__(self, *args):
+        DockerOpt.__init__(self, *args)
+
+    @staticmethod
+    def format_bytes(x):
+        KB = 1024
+        MB = KB*1024
+        GB = MB*1024
+        x = float(x)
+        if x < 1024:
+            return '%sb' % round(x)
+        elif 1024 <= x < MB:
+            return '%sk' % round(x/KB)
+        elif KB <= x < GB:
+            return '%sm' % round(x/MB)
+        elif GB <= x:
+            return '%sg' % round(x/GB)
+
+    def __str__(self):
+        try:
+            return '%s %s' % (self.opt, self.format_bytes(self.value))
+        except ValueError:
+            raise TypeError('unsupported value type for option "%s": %s' % \
+                    (self.opt, self.value))
+
 class ValueOpt(DockerOpt):
     """ Option with one or more user-defined values """
     def __init__(self, *args):
