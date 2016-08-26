@@ -8,36 +8,40 @@ log = logging.getLogger(__name__)
 class OptionParser(object):
     def __init__(self, config):
         self.config = config
+        self.opts = []
 
-        # Command line options requiring unique parsing
-        self.special_opts = [
-            DockerOpt('--name', self.get('Name').strip('/')),
-          ]
+        # read in all basic options
+        for o_name, o_key, o_type in config_opts:
+            opt = o_type(o_name, self.get(o_key))
+            self.opts.append(opt)
+
+        # read options requiring unique parsing
+        self.opts.append(DockerOpt('--name', self.get('Name').strip('/')))
 
         # published ports
         val = self.get('HostConfig.PortBindings')
         if val:
-            self.special_opts += list(self.read_published(val))
+            self.opts += list(self.read_published(val))
 
         # exposed ports
         val = self.get('Config.ExposedPorts')
         if val:
-            self.special_opts += list(self.read_exposed(val))
+            self.opts += list(self.read_exposed(val))
 
         # container links
         val = self.get('HostConfig.Links')
         if val:
-            self.special_opts += list(self.read_links(val))
+            self.opts += list(self.read_links(val))
 
         # restart policy
         val = self.get('HostConfig.RestartPolicy')
-        self.special_opts.append(self.read_restart(val))
+        self.opts.append(self.read_restart(val))
 
         # entrypoint
         val = self.get('Config.Entrypoint')
         if val:
             ep = '"%s"' % ' '.join(val)
-            self.special_opts.append(DockerOpt('--entrypoint', ep))
+            self.opts.append(DockerOpt('--entrypoint', ep))
 
         self.args = [
             DockerArg('Image', self.get('Config.Image')),
@@ -68,9 +72,11 @@ class OptionParser(object):
                 else:
                     yield hp['HostPort']
 
-        for cport,val in bindings.items():
-            for hostport in read_hostports(val):
-                yield DockerOpt('--publish', '%s:%s' % (cport,hostport))
+        for cport,binds in bindings.items():
+            cport, proto = cport.split('/')
+            for hostport in read_hostports(binds):
+                val = '%s:%s/%s' % (hostport,cport,proto)
+                yield DockerOpt('--publish', val)
 
     @staticmethod
     def read_links(links):
@@ -78,15 +84,6 @@ class OptionParser(object):
             src, linkname = link.split(':')
             val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
             yield DockerOpt('--link', val)
-
-    @property
-    def opts(self):
-        all_opts = []
-        for o_name, o_key, o_type in config_opts:
-            opt = o_type(o_name, self.get(o_key))
-            all_opts.append(opt)
-
-        return all_opts + self.special_opts
 
     def get(self, key):
         """
