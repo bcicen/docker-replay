@@ -98,7 +98,11 @@ class OptionParser(object):
         key_parts = key.split('.')
         config = self.config
         while key_parts:
-            config = config[key_parts.pop(0)]
+            try:
+                config = config[key_parts.pop(0)]
+            except KeyError:
+                log.info('returning null for non-existent key: %s' % key)
+                return None
         return config
 
 config_opts = [
