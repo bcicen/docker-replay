@@ -65,13 +65,9 @@ class ValueOpt(DockerOpt):
         DockerOpt.__init__(self, *args)
 
     def __str__(self):
-        if isinstance(self.value, str):
+        if type(self.value) in (str, int, float):
             return '%s %s' % (self.opt, self.value)
-        elif isinstance(self.value, int):
-            return '%s %s' % (self.opt, self.value)
-        elif isinstance(self.value, float):
-            return '%s %s' % (self.opt, self.value)
-        elif isinstance(self.value, list):
+        elif type(self.value) == list:
             return ' '.join([ '%s %s' % (self.opt, v) for v in self.value ])
         else:
             raise TypeError('unsupported value type for option "%s": %s' % \

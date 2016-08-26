@@ -4,7 +4,7 @@
 #TODO: ulimits
 
 import logging
-from docker_rerun.models import BoolOpt, DockerArg, DockerOpt, MapOpt, ByteValueOpt, ValueOpt
+from docker_rerun.models import *
 
 log = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ class OptionParser(object):
     def __init__(self, config):
         self.config = config
 
-        # "Special" command line options (order-dependent, etc.)
+        # Command line options requiring unique parsing
         self.special_opts = [
             DockerOpt('--name', self.get('Name').strip('/')),
           ]
@@ -21,15 +21,23 @@ class OptionParser(object):
             ep = ' '.join(self.get('Config.Entrypoint'))
             self.special_opts.append(DockerOpt('--entrypoint', ep))
 
-        for link in self.get('HostConfig.Links'):
-            src, linkname = link.split(':')
-            val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
-            self.special_opts.append(DockerOpt('--link', val))
+        # container links
+        if self.get('HostConfig.Links'):
+            self.special_opts += self.read_links(self.get('HostConfig.Links'))
 
         self.args = [
             DockerArg('Image', self.get('Config.Image')),
             DockerArg('Cmd', ' '.join(self.get('Config.Cmd')))
           ]
+
+    @staticmethod
+    def read_links(links):
+        link_opts = []
+        for link in links:
+            src, linkname = link.split(':')
+            val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
+            link_opts.append(DockerOpt('--link', val))
+        return link_opts
 
     @property
     def opts(self):
