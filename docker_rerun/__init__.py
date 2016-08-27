@@ -1,20 +1,19 @@
 import sys
 import logging
 from argparse import ArgumentParser
-from docker import Client, errors
 
 from docker_rerun import version
-from docker_rerun.opts import OptionParser
 
-log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+log = logging.getLogger('docker-rerun')
 
 class DockerRerun(object):
     def __init__(self, container_id, pretty_print=True):
+        from docker import Client, errors
+        from docker_rerun.opts import OptionParser
+
         self.pretty_print = pretty_print
-        client = Client()
         try:
-            inspect = client.inspect_container(container_id)
+            inspect = Client().inspect_container(container_id)
             self.parser = OptionParser(inspect)
         except errors.NotFound:
             print('no such container: %s' % container_id)
@@ -30,7 +29,15 @@ class DockerRerun(object):
 
 def main():
     argparser = ArgumentParser(description='docker-rerun v%s' % version)
-    argparser.add_argument('container', help='container to generate command from')
+    argparser.add_argument('-d', '--debug', action='store_true',
+                            help='enable debug output')
+    argparser.add_argument('container',
+                            help='container to generate command from')
     args = argparser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARN)
 
     print(DockerRerun(args.container))

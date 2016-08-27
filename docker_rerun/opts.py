@@ -3,7 +3,7 @@
 import logging
 from docker_rerun.models import *
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('docker-rerun')
 
 class OptionParser(object):
     def __init__(self, config):
@@ -47,6 +47,9 @@ class OptionParser(object):
             DockerArg('Image', self.get('Config.Image')),
             DockerArg('Cmd', ' '.join(self.get('Config.Cmd')))
           ]
+
+        log.info('parsed %d options' % len(self.opts))
+        log.info('parsed %d args' % len(self.args))
 
     @staticmethod
     def read_restart(policy):
