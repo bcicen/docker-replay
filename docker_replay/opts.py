@@ -146,7 +146,6 @@ config_opts = [
     ('--oom-kill-disable', 'HostConfig.OomKillDisable', BoolOpt),
     ('--oom-score-adj', 'HostConfig.OomScoreAdj', ValueOpt),
     ('--publish-all', 'HostConfig.PublishAllPorts', BoolOpt),
-#    ('--publish', 'HostConfig.???', ValueOpt),
     ('--pid', 'HostConfig.PidMode', ValueOpt),
     ('--pids-limit', 'HostConfig.PidsLimit', ValueOpt),
     ('--privileged', 'HostConfig.Privileged', BoolOpt),

@@ -65,7 +65,7 @@ class ValueOpt(DockerOpt):
         DockerOpt.__init__(self, *args)
 
     def __str__(self):
-        if type(self.value) in (str, int, float):
+        if type(self.value) in (str, unicode, int, float):
             return '%s %s' % (self.opt, self.value)
         elif type(self.value) == list:
             return ' '.join([ '%s %s' % (self.opt, v) for v in self.value ])
