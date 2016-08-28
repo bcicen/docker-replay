@@ -1,14 +1,14 @@
 from setuptools import setup
 
-exec(open('docker_rerun/version.py').read())
+exec(open('docker_replay/version.py').read())
 
-setup(name='docker-rerun',
+setup(name='docker-replay',
       version=version,
-      packages=['docker_rerun'],
+      packages=['docker_replay'],
       description='Generate docker run commands from running containers',
       author='Bradley Cicenas',
       author_email='bradley.cicenas@gmail.com',
-      url='https://github.com/bcicen/docker-rerun',
+      url='https://github.com/bcicen/docker-replay',
       install_requires=['docker-py>=1.7.2'],
       license='http://opensource.org/licenses/MIT',
       classifiers=(
@@ -21,6 +21,6 @@ setup(name='docker-rerun',
       ),
       keywords='docker docker-py devops',
       entry_points = {
-        'console_scripts' : ['docker-rerun = docker_rerun:main']
+        'console_scripts' : ['docker-replay = docker_replay:main']
       }
 )

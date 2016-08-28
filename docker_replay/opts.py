@@ -1,9 +1,9 @@
 #TODO: ulimits
 
 import logging
-from docker_rerun.models import *
+from docker_replay.models import *
 
-log = logging.getLogger('docker-rerun')
+log = logging.getLogger('docker-replay')
 
 class OptionParser(object):
     def __init__(self, config):

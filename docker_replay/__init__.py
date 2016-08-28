@@ -2,14 +2,14 @@ import sys
 import logging
 from argparse import ArgumentParser
 
-from docker_rerun import version
+from docker_replay import version
 
-log = logging.getLogger('docker-rerun')
+log = logging.getLogger('docker-replay')
 
-class DockerRerun(object):
+class DockerReplay(object):
     def __init__(self, container_id, pretty_print=True):
         from docker import Client, errors
-        from docker_rerun.opts import OptionParser
+        from docker_replay.opts import OptionParser
 
         self.pretty_print = pretty_print
         try:
@@ -28,7 +28,7 @@ class DockerRerun(object):
         return 'docker run %s' % ' '.join(opts)
 
 def main():
-    argparser = ArgumentParser(description='docker-rerun v%s' % version)
+    argparser = ArgumentParser(description='docker-replay v%s' % version)
     argparser.add_argument('-d', '--debug', action='store_true',
                             help='enable debug output')
     argparser.add_argument('container',

@@ -1,16 +1,16 @@
-# docker-rerun
+# docker-replay
 Generate `docker run` command and options from running containers
 
 ## Installing
 
 ```bash
-pip install docker-rerun
+pip install docker-replay
 ```
 
 ### Usage
 
 ```bash
-docker-rerun <container name or id>
+docker-replay <container name or id>
 ```
 
 output:
