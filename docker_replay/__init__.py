@@ -40,4 +40,4 @@ def main():
     else:
         logging.basicConfig(level=logging.WARN)
 
-    print(DockerRerun(args.container))
+    print(DockerReplay(args.container))
