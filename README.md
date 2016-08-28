@@ -10,7 +10,7 @@ pip install docker-replay
 ### Usage
 
 ```bash
-docker-replay <container name or id>
+docker-replay -p <container name or id>
 ```
 
 output:

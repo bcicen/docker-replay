@@ -31,6 +31,8 @@ def main():
     argparser = ArgumentParser(description='docker-replay v%s' % version)
     argparser.add_argument('-d', '--debug', action='store_true',
                             help='enable debug output')
+    argparser.add_argument('-p', '--pretty-print', action='store_true',
+                            help='pretty-print output')
     argparser.add_argument('container',
                             help='container to generate command from')
     args = argparser.parse_args()
@@ -40,4 +42,4 @@ def main():
     else:
         logging.basicConfig(level=logging.WARN)
 
-    print(DockerReplay(args.container))
+    print(DockerReplay(args.container, args.pretty_print))
