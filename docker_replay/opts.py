@@ -48,7 +48,7 @@ class OptionParser(object):
 
     def read_args(self):
         # image
-        self.args.append(DockerArg('Image', self.get('Config.Image'))) 
+        self.args.append(DockerArg('Image', self.get('Config.Image')))
 
         # cmd
         val = self.get('Config.Cmd')
