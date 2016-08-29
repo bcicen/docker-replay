@@ -8,8 +8,16 @@ log = logging.getLogger('docker-replay')
 class OptionParser(object):
     def __init__(self, config):
         self.config = config
+        self.args = []
         self.opts = []
 
+        self.read_opts()
+        self.read_args()
+
+        log.info('parsed %d options' % len(self.opts))
+        log.info('parsed %d args' % len(self.args))
+
+    def read_opts(self):
         # read in all basic options
         for o_name, o_key, o_type in config_opts:
             opt = o_type(o_name, self.get(o_key))
@@ -20,18 +28,15 @@ class OptionParser(object):
 
         # published ports
         val = self.get('HostConfig.PortBindings')
-        if val:
-            self.opts += list(self.read_published(val))
+        self.opts += list(self.read_published(val))
 
         # exposed ports
         val = self.get('Config.ExposedPorts')
-        if val:
-            self.opts += list(self.read_exposed(val))
+        self.opts += list(self.read_exposed(val))
 
         # container links
         val = self.get('HostConfig.Links')
-        if val:
-            self.opts += list(self.read_links(val))
+        self.opts += list(self.read_links(val))
 
         # restart policy
         val = self.get('HostConfig.RestartPolicy')
@@ -39,20 +44,49 @@ class OptionParser(object):
 
         # entrypoint
         val = self.get('Config.Entrypoint')
-        if val:
-            val = '"%s"' % ' '.join(val)
-        self.opts.append(DockerOpt('--entrypoint', val))
+        self.opts.append(self.read_entrypoint(val))
 
-        self.args = [ DockerArg('Image', self.get('Config.Image')) ]
+    def read_args(self):
+        # image
+        self.args.append(DockerArg('Image', self.get('Config.Image'))) 
 
         # cmd
         val = self.get('Config.Cmd')
-        if val:
-            val = ' '.join(val)
-        self.args.append(DockerArg('Cmd', val))
+        self.args.append(self.read_cmd(val))
 
-        log.info('parsed %d options' % len(self.opts))
-        log.info('parsed %d args' % len(self.args))
+    @staticmethod
+    def read_published(bindings):
+        def read_hostports(hplist):
+            for hp in hplist:
+                if hp['HostIp']:
+                    yield '%s:%s' % (hp['HostIp'], hp['HostPort'])
+                else:
+                    yield hp['HostPort']
+
+        if not bindings:
+            return
+
+        for cport,binds in bindings.items():
+            cport, proto = cport.split('/')
+            for hostport in read_hostports(binds):
+                val = '%s:%s/%s' % (hostport,cport,proto)
+                yield DockerOpt('--publish', val)
+
+    @staticmethod
+    def read_exposed(exposed):
+        if not exposed:
+            return
+        for port in exposed:
+            yield DockerOpt('--expose', port)
+
+    @staticmethod
+    def read_links(links):
+        if not links:
+            return
+        for link in links:
+            src, linkname = link.split(':')
+            val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
+            yield DockerOpt('--link', val)
 
     @staticmethod
     def read_restart(policy):
@@ -65,31 +99,16 @@ class OptionParser(object):
         return DockerOpt('--restart', val)
 
     @staticmethod
-    def read_exposed(exposed):
-        for port in exposed:
-            yield DockerOpt('--expose', port)
+    def read_entrypoint(ep):
+        if ep:
+            ep = '"%s"' % ' '.join(ep)
+        return DockerOpt('--entrypoint', ep)
 
     @staticmethod
-    def read_published(bindings):
-        def read_hostports(hplist):
-            for hp in hplist:
-                if hp['HostIp']:
-                    yield '%s:%s' % (hp['HostIp'], hp['HostPort'])
-                else:
-                    yield hp['HostPort']
-
-        for cport,binds in bindings.items():
-            cport, proto = cport.split('/')
-            for hostport in read_hostports(binds):
-                val = '%s:%s/%s' % (hostport,cport,proto)
-                yield DockerOpt('--publish', val)
-
-    @staticmethod
-    def read_links(links):
-        for link in links:
-            src, linkname = link.split(':')
-            val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
-            yield DockerOpt('--link', val)
+    def read_cmd(cmd):
+        if cmd:
+            cmd = ' '.join(cmd)
+        return DockerArg('Cmd', cmd)
 
     def get(self, key):
         """
