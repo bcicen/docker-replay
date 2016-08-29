@@ -40,13 +40,16 @@ class OptionParser(object):
         # entrypoint
         val = self.get('Config.Entrypoint')
         if val:
-            ep = '"%s"' % ' '.join(val)
-            self.opts.append(DockerOpt('--entrypoint', ep))
+            val = '"%s"' % ' '.join(val)
+        self.opts.append(DockerOpt('--entrypoint', val))
 
-        self.args = [
-            DockerArg('Image', self.get('Config.Image')),
-            DockerArg('Cmd', ' '.join(self.get('Config.Cmd')))
-          ]
+        self.args = [ DockerArg('Image', self.get('Config.Image')) ]
+
+        # cmd
+        val = self.get('Config.Cmd')
+        if val:
+            val = ' '.join(val)
+        self.args.append(DockerArg('Cmd', val))
 
         log.info('parsed %d options' % len(self.opts))
         log.info('parsed %d args' % len(self.args))
