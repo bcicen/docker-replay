@@ -1,4 +1,16 @@
 
+def build_opt(o_type, o_name, o_val):
+    # yield a new opt for multi-value options(--volume, --env, etc.)
+    if o_type == ValueOpt and isinstance(o_val, list):
+        for val in o_val:
+            yield o_type(o_name, val)
+    elif o_type == MapOpt:
+        for k,v in o_val.items():
+            val = '%s=%s' % (k,v)
+            yield MapOpt(o_name, val)
+    else:
+        yield o_type(o_name, o_val)
+
 class DockerArg(object):
     def __init__(self, name, val):
         self.name = name
@@ -66,22 +78,13 @@ class ValueOpt(DockerOpt):
         DockerOpt.__init__(self, *args)
 
     def __str__(self):
-        if type(self.value) == list:
-            return ' '.join([ '%s %s' % (self.opt, v) for v in self.value ])
         try:
             return '%s %s' % (self.opt, self.value)
         except ValueError:
             raise TypeError('unsupported value type for option "%s": %s' % \
                     (self.opt, self.value))
 
-class MapOpt(DockerOpt):
+class MapOpt(ValueOpt):
     """ Option with one or more user-defined mappings """
     def __init__(self, *args):
-        DockerOpt.__init__(self, *args)
-
-    def __str__(self):
-        if not isinstance(self.value, dict):
-            raise TypeError('unsupported value type for option "%s": %s' % \
-                    (self.opt, self.value))
-        kvlist = [ '%s=%s' % (k,v) for k,v in self.value.items() ]
-        return ' '.join([ '%s %s' % (self.opt, i) for i in kvlist ])
+        ValueOpt.__init__(self, *args)
