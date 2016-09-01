@@ -1,4 +1,7 @@
 # docker-replay
+
+[![PyPI version](https://badge.fury.io/py/docker-replay.svg)](https://badge.fury.io/py/docker-replay)
+
 Generate `docker run` command and options from running containers
 
 ## Installing
