@@ -13,7 +13,7 @@ class DockerReplay(object):
 
         self.pretty_print = pretty_print
         try:
-            inspect = Client().inspect_container(container_id)
+            inspect = Client(version='auto').inspect_container(container_id)
             self.parser = OptionParser(inspect)
         except errors.NotFound:
             print('no such container: %s' % container_id)
