@@ -40,3 +40,9 @@ Option | Description
 --- | ---
 --debug, -d | enable debug output
 --pretty-print, -p | pretty-print output
+
+## Usage with Docker
+
+```bash
+docker run -v /var/run/docker.sock:/var/run/docker.sock tiagoad/docker-replay -p <container name or id>
+```
