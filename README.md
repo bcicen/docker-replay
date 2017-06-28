@@ -44,5 +44,5 @@ Option | Description
 ## Usage with Docker
 
 ```bash
-docker run -v /var/run/docker.sock:/var/run/docker.sock tiagoad/docker-replay -p <container name or id>
+docker run -v /var/run/docker.sock:/var/run/docker.sock bcicen/docker-replay -p <container name or id>
 ```
