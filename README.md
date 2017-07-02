@@ -4,6 +4,16 @@
 
 Generate `docker run` command and options from running containers
 
+## Quickstart
+
+`docker-replay` can be most easily run using the official image build:
+```bash
+docker run --rm -ti \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  bcicen/docker-replay \
+  -p <container name or id>
+```
+
 ## Installing
 
 ```bash
@@ -40,9 +50,3 @@ Option | Description
 --- | ---
 --debug, -d | enable debug output
 --pretty-print, -p | pretty-print output
-
-## Usage with Docker
-
-```bash
-docker run -v /var/run/docker.sock:/var/run/docker.sock bcicen/docker-replay -p <container name or id>
-```
