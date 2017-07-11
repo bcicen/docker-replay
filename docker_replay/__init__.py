@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 from argparse import ArgumentParser
@@ -8,12 +9,17 @@ log = logging.getLogger('docker-replay')
 
 class DockerReplay(object):
     def __init__(self, container_id, pretty_print=True):
-        from docker import Client, errors
+        from docker import client, errors
         from docker_replay.opts import OptionParser
 
         self.pretty_print = pretty_print
+
+        client_args = { 'version': 'auto' }
+        if os.getenv('DOCKER_HOST'):
+            client_args['base_url'] = os.getenv('DOCKER_HOST')
+
         try:
-            inspect = Client(version='auto').inspect_container(container_id)
+            inspect = client.APIClient(**client_args).inspect_container(container_id)
             self.parser = OptionParser(inspect)
         except errors.NotFound:
             print('no such container: %s' % container_id)
