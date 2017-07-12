@@ -33,6 +33,10 @@ class OptionParser(object):
         val = self.get('Config.ExposedPorts')
         self.opts += list(self.read_exposed(val))
 
+        # network mode
+        val = self.get('HostConfig.NetworkMode')
+        self.opts.append(self.read_netmode(val))
+
         # container links
         val = self.get('HostConfig.Links')
         self.opts += list(self.read_links(val))
@@ -86,6 +90,12 @@ class OptionParser(object):
             src, linkname = link.split(':')
             val = '%s:%s' % (src.strip('/'), linkname.split('/')[-1])
             yield DockerOpt('--link', val)
+
+    @staticmethod
+    def read_netmode(mode):
+        if mode == "default":
+            mode = None
+        return DockerOpt('--net', mode)
 
     @staticmethod
     def read_restart(policy):
