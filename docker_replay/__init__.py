@@ -26,7 +26,7 @@ class DockerReplay(object):
             sys.exit(1)
 
     def __str__(self):
-        opts = [ str(o) for o in self.parser.opts if not o.is_null() ]
+        opts = sorted([ str(o) for o in self.parser.opts if not o.is_null() ])
         opts += [ str(a) for a in self.parser.args if not a.is_null() ]
 
         if self.pretty_print:
