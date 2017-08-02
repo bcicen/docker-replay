@@ -14,12 +14,10 @@ class DockerReplay(object):
 
         self.pretty_print = pretty_print
 
-        client_args = { 'version': 'auto' }
-        if os.getenv('DOCKER_HOST'):
-            client_args['base_url'] = os.getenv('DOCKER_HOST')
+        c = client.from_env()
 
         try:
-            inspect = client.APIClient(**client_args).inspect_container(container_id)
+            inspect = c.api.inspect_container(container_id)
             self.parser = OptionParser(inspect)
         except errors.NotFound:
             print('no such container: %s' % container_id)
