@@ -9,7 +9,7 @@ setup(name='docker-replay',
       author='Bradley Cicenas',
       author_email='bradley.cicenas@gmail.com',
       url='https://github.com/bcicen/docker-replay',
-      install_requires=['docker-py>=1.7.2'],
+      install_requires=['docker>=2.4.2'],
       license='http://opensource.org/licenses/MIT',
       classifiers=(
           'Intended Audience :: Developers',
