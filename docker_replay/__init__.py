@@ -14,7 +14,7 @@ class DockerReplay(object):
 
         self.pretty_print = pretty_print
 
-        c = client.from_env()
+        c = client.from_env(version='auto')
 
         try:
             inspect = c.api.inspect_container(container_id)
