@@ -54,15 +54,19 @@ class ByteValueOpt(DockerOpt):
         KB = 1024
         MB = KB*1024
         GB = MB*1024
+
+        def _round(x):
+            return int(round(x))
+
         x = float(x)
         if x < 1024:
-            return '%sb' % round(x)
+            return '%sb' % _round(x)
         elif 1024 <= x < MB:
-            return '%sk' % round(x/KB)
+            return '%sk' % _round(x/KB)
         elif KB <= x < GB:
-            return '%sm' % round(x/MB)
+            return '%sm' % _round(x/MB)
         elif GB <= x:
-            return '%sg' % round(x/GB)
+            return '%sg' % _round(x/GB)
 
     def __str__(self):
         try:
