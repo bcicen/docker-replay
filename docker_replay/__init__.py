@@ -3,7 +3,7 @@ import sys
 import logging
 from argparse import ArgumentParser
 
-from docker_replay import version
+from docker_replay.version import version
 
 log = logging.getLogger('docker-replay')
 

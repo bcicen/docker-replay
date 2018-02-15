@@ -20,7 +20,8 @@ class OptionParser(object):
     def read_opts(self):
         # read in all basic options
         for o_name, o_key, o_type in config_opts:
-            self.opts += list(build_opt(o_type, o_name, self.get(o_key)))
+            o_val = self.get(o_key, o_type.default)
+            self.opts += list(build_opt(o_type, o_name, o_val))
 
         # read options requiring unique parsing
         self.opts.append(DockerOpt('--name', self.get('Name').strip('/')))

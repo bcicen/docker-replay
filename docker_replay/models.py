@@ -5,6 +5,9 @@ def build_opt(o_type, o_name, o_val):
         for val in o_val:
             yield o_type(o_name, val)
     elif o_type == MapOpt:
+        if o_val is None:
+            yield o_type(o_name, None)
+            return
         for k,v in o_val.items():
             val = '%s=%s' % (k,v)
             yield MapOpt(o_name, val)
@@ -25,6 +28,9 @@ class DockerArg(object):
         return self.value
 
 class DockerOpt(object):
+
+    default = None
+
     def __init__(self, opt, val):
         self.opt = opt
         self.value = val
@@ -89,6 +95,9 @@ class ValueOpt(DockerOpt):
                     (self.opt, self.value))
 
 class MapOpt(ValueOpt):
+
+    default = {}
+
     """ Option with one or more user-defined mappings """
     def __init__(self, *args):
         ValueOpt.__init__(self, *args)
