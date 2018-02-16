@@ -6,10 +6,12 @@ from docker_replay.models import *
 log = logging.getLogger('docker-replay')
 
 class OptionParser(object):
+
+    args = []
+    opts = []
+
     def __init__(self, config):
         self.config = config
-        self.args = []
-        self.opts = []
 
         self.read_opts()
         self.read_args()
@@ -120,7 +122,7 @@ class OptionParser(object):
             cmd = ' '.join(cmd)
         return DockerArg('Cmd', cmd)
 
-    def get(self, key):
+    def get(self, key, default=None):
         """
         Retrieve a top-level or nested key, e.g:
         >>> get('Id')
@@ -134,7 +136,7 @@ class OptionParser(object):
                 config = config[key_parts.pop(0)]
             except KeyError:
                 log.info('returning null for non-existent key: %s' % key)
-                return None
+                return default
         return config
 
 config_opts = [
