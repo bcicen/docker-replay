@@ -72,7 +72,9 @@ class RestartParser(OptParser):
     def build(self, val):
         if val['Name'] == 'no':
             return
-        v = '%s:%s' % (val['Name'], val['MaximumRetryCount'])
+        v = val['Name']
+        if val['MaximumRetryCount'] != 0:
+            v += ':%s' % val['MaximumRetryCount']
         yield self.build_one(v)
 
 class EntrypointParser(OptParser):
