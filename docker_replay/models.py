@@ -1,20 +1,9 @@
 
-def build_opt(o_type, o_name, o_val):
-    # yield a new opt for multi-value options(--volume, --env, etc.)
-    if o_type == ValueOpt and isinstance(o_val, list):
-        for val in o_val:
-            yield o_type(o_name, val)
-    elif o_type == MapOpt:
-        if o_val is None:
-            yield o_type(o_name, None)
-            return
-        for k,v in o_val.items():
-            val = '%s=%s' % (k,v)
-            yield MapOpt(o_name, val)
-    else:
-        yield o_type(o_name, o_val)
+class DockerParam(object):
+    """ Base class for options or arguments """
 
-class DockerArg(object):
+    default = None
+
     def __init__(self, name, val):
         self.name = name
         self.value = val
@@ -24,36 +13,32 @@ class DockerArg(object):
             return False
         return True
 
+class DockerArg(DockerParam):
+    """ Represents a positional argument to `docker run` """
+
     def __str__(self):
         return self.value
 
-class DockerOpt(object):
-
-    default = None
-
-    def __init__(self, opt, val):
-        self.opt = opt
-        self.value = val
-
-    def is_null(self):
-        if self.value:
-            return False
-        return True
+class DockerOpt(DockerParam):
+    """ Represents an option to `docker run` """
 
     def __str__(self):
-        return '%s %s' % (self.opt, self.value)
+        return '%s %s' % (self.name, self.value)
+
+"""
+Generic option types
+"""
 
 class BoolOpt(DockerOpt):
     def __init__(self, *args):
-        DockerOpt.__init__(self, *args)
+        super(DockerOpt, self).__init__(*args)
+        # DockerOpt.__init__(self, *args)
 
     def __str__(self):
-        return self.opt
+        return self.name
 
 class ByteValueOpt(DockerOpt):
     """ Option with one or more user-defined values """
-    def __init__(self, *args):
-        DockerOpt.__init__(self, *args)
 
     @staticmethod
     def format_bytes(x):
@@ -76,28 +61,22 @@ class ByteValueOpt(DockerOpt):
 
     def __str__(self):
         try:
-            return '%s %s' % (self.opt, self.format_bytes(self.value))
+            return '%s %s' % (self.name, self.format_bytes(self.value))
         except ValueError:
             raise TypeError('unsupported value type for option "%s": %s' % \
-                    (self.opt, self.value))
+                    (self.name, self.value))
 
 class ValueOpt(DockerOpt):
     """ Option with one or more user-defined values """
 
-    def __init__(self, *args):
-        DockerOpt.__init__(self, *args)
-
     def __str__(self):
         try:
-            return '%s %s' % (self.opt, self.value)
+            return '%s %s' % (self.name, self.value)
         except ValueError:
             raise TypeError('unsupported value type for option "%s": %s' % \
-                    (self.opt, self.value))
+                    (self.name, self.value))
 
 class MapOpt(ValueOpt):
+    """ Option with one or more user-defined mappings """
 
     default = {}
-
-    """ Option with one or more user-defined mappings """
-    def __init__(self, *args):
-        ValueOpt.__init__(self, *args)

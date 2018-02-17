@@ -10,7 +10,7 @@ log = logging.getLogger('docker-replay')
 class DockerReplay(object):
     def __init__(self, container_id, pretty_print=True):
         from docker import client, errors
-        from docker_replay.opts import OptionParser
+        from docker_replay.parser import ConfigParser
 
         self.pretty_print = pretty_print
 
@@ -18,7 +18,7 @@ class DockerReplay(object):
 
         try:
             inspect = c.api.inspect_container(container_id)
-            self.parser = OptionParser(inspect)
+            self.parser = ConfigParser(inspect)
         except errors.NotFound:
             print('no such container: %s' % container_id)
             sys.exit(1)
