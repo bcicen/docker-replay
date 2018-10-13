@@ -151,3 +151,8 @@ config_opts = [
     PublishedParser('--publish', 'HostConfig.PortBindings', DockerOpt),
     RestartParser('--restart', 'HostConfig.RestartPolicy', DockerOpt),
   ]
+
+# options which, if defined, will omit the value options from output
+config_disables = {
+    '--uts': ['--hostname'],
+  }

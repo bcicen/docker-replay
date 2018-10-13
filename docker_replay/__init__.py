@@ -4,6 +4,7 @@ import logging
 from argparse import ArgumentParser
 
 from docker_replay.version import version
+from docker_replay.opts import config_disables
 
 log = logging.getLogger('docker-replay')
 
@@ -24,12 +25,19 @@ class DockerReplay(object):
             sys.exit(1)
 
     def __str__(self):
-        opts = sorted([ str(o) for o in self.parser.opts if not o.is_null() ])
-        opts += [ str(a) for a in self.parser.args if not a.is_null() ]
+        # remove conflicting options
+        drop_opts = []
+        for o in self.parser.opts:
+            if o.name in config_disables:
+                drop_opts += config_disables[o.name]
+
+        output = sorted([ str(o) for o in self.parser.opts \
+                if o.name not in drop_opts ])
+        output += [ str(a) for a in self.parser.args ]
 
         if self.pretty_print:
-            return 'docker run %s' % ' \\\n           '.join(opts)
-        return 'docker run %s' % ' '.join(opts)
+            return 'docker run %s' % ' \\\n           '.join(output)
+        return 'docker run %s' % ' '.join(output)
 
 def main():
     argparser = ArgumentParser(description='docker-replay v%s' % version)

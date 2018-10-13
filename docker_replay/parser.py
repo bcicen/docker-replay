@@ -22,8 +22,14 @@ class ConfigParser(object):
             o_val = self.get(ap.key)
             self.args += list(ap.build(o_val))
 
-        log.info('parsed %d options' % len(self.opts))
-        log.info('parsed %d args' % len(self.args))
+        olen, alen = len(self.opts), len(self.args)
+
+        # filter null opts
+        self.opts = [ o for o in self.opts if not o.is_null() ]
+        self.args = [ o for o in self.args if not o.is_null() ]
+
+        log.info('parsed %d options (%d configured)' % (olen, len(self.opts)))
+        log.info('parsed %d args (%d configured)' % (alen, len(self.args)))
 
     def get(self, key, default=None):
         """
